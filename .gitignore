@@ -7,3 +7,6 @@
 *.Rproj.user/
 *.Rproj.user
 .Rproj.user
+
+# A data transformation file that includes some confidential info - do not put it into repo
+hide_true_data.R

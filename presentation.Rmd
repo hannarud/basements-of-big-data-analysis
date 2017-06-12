@@ -12,7 +12,113 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Inspiration: garbage in - garbage out: nothing is more true!
 
-<center><img src="data-cleaning-inspiration.png" alt="Data - Sorted - Arranged - Presented Visually" style="height: 350px;"/></center>
+<center><img src="images/data-cleaning-inspiration.png" alt="Data - Sorted - Arranged - Presented Visually" style="height: 350px;"/></center>
 
 Picture from Applied Informatics (<http://blog.appliedinformaticsinc.com/data-mining-challenges-in-data-cleaning/>).
+
+## "Sponsors" of today's theme
+
+- [Davy Cielen, Arno D.B. Meysman, Mohamed Ali "Introducing Data Science: Big Data, Machine Learning, and more using Python tools"](https://www.manning.com/books/introducing-data-science)
+- my colleagues Anton and two Kates and the tasks we solve daily
+- Kaggle as antipode
+
+# Must-do | obligatory "sanity checks" when starting DA process
+
+## Data Types
+
+- factor and ranged data
+
+Частный случай применения: если R считал колонку с цифрами как фактор, то as.numeric дает числовое представление этого фактора, что может не совпадать с числовым хначением внутри, поэтому приходится делать as.numeric(as.character) для этого случая
+
+С другой стороны, преобразования из числа в строку и назад всегда проходят безболезненно
+
+- certain methods "eat" certain types
+
+Разработка метрики для kNN в случае ранжированных переменных и подобное
+
+взять количество unique (ну и вообще, повторить табличку exploratory info)
+
+взять table - для определения а) частот значений б) непересекающегося подмножества значений
+
+## Data groups
+
+- нужно ли делать данные на группы?
+- если да, то по какой причине?
+- в чем заключается различие между группами с точки зрения результатов именно этой задачи?- тесты на различие групповых средних и групповых дисперсий - лучший пример
+
+## Headers and their analysis
+
+## NA values
+
+- Is it a good idea to omit NAs?
+
+Поступенчатое избавление от НА
+
+## Multicollinearity
+
+Удаление попарных корреляций из данных и к чему это может привести
+
+## Insight first - analysis later
+
+## "Dealing with data" pipeline
+
+Выстроить пайплайн, согласно которому всегда можно провести процесс получения данных еще раз. Использовать его для обновления датасета, и только его. Способ получения данных должен быть фиксированным
+
+## 
+
+# Task-dependant | funny stuff obtained for particular practice cases
+
+## Time series quick classification
+
+- проверка эмпирических распределений (чтобы они не менялись во времени)
+
+# Moving on to practice
+
+## Example datasets and goals
+
+```{r, echo = TRUE}
+testtime_6400 <- read.csv(file = "VL6_6400 CCB_TestSequence Feb_Apr 2017 testcode VL6X54A.csv", stringsAsFactors = FALSE)
+testtime_6600 <- read.csv(file = "VL6_6600 CCB_TestSequence Feb_Apr 2017 testcode VL6X54A.csv", stringsAsFactors = FALSE)
+```
+
+```{r, echo = TRUE}
+library(dplyr)
+
+# Read e2e data for 6400 PROCID MFG results
+e2e_part1 <- read.csv(file = "e2e_table for_VL6_part1.csv", stringsAsFactors = FALSE)
+e2e_part2 <- read.csv(file = "e2e_table for_VL6_part2.csv", stringsAsFactors = FALSE)
+e2e_part3 <- read.csv(file = "e2e_table for_VL6_part3.csv", stringsAsFactors = FALSE)
+e2e_part4 <- read.csv(file = "e2e_table for_VL6_part4.csv", stringsAsFactors = FALSE)
+
+# Collect all the e2e table together
+e2e <- bind_rows(e2e_part1, e2e_part2, e2e_part3, e2e_part4)
+
+# Making ENDDATE to be date again
+e2e$ENDDATE <- as.POSIXct(as.character(e2e$ENDDATE), format = "%Y%m%d%H%M%S", tz = "")
+
+rm(e2e_part1, e2e_part2, e2e_part3, e2e_part4)
+```
+
+```{r, echo = TRUE}
+exploratory_info <- data.frame(colname = names(e2e))
+exploratory_info$type <- sapply(e2e, typeof)
+exploratory_info$num_of_unique_values <- apply(e2e, 2, function(x){length(unique(x))})
+exploratory_info$num_of_unique_values_no_na <- apply(e2e, 2, function(x){ifelse(sum(is.na(x)) > 0, as.integer(length(unique(x)) -1), length(unique(x)))})
+exploratory_info$NAs_percentage <- apply(e2e, 2, function(x){sum(is.na(x))/length(x)*100})
+```
+
+
+
+- не знаем спецификации колонок
+
+
+Databook или описание данных или data dictionary - бфыло бы классно, но встречается действительно редко
+
+- в задаче про test time цели могут ставить по-разному, от этого зависит и целевая переменнная. Если цель - 
+
+
+Важность RegExp
+
+
+Потом- - объединение данных друг с другом для решения конкретной задачи
 
