@@ -1,0 +1,25 @@
+
+table, th, td {
+    border: 2px solid #DDDDDD;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 5px;
+}
+
+div {
+    text-align: justify;
+}
+
+div img {
+    display: inline-block;
+    width: 40%;
+    height: 40%;
+}
+
+div:after {
+    content: '';
+    display: inline-block;
+    width: 100%;
+}
