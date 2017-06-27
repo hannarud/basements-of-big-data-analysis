@@ -1,7 +1,7 @@
 ---
 title: "Basements of Big Data analysis"
 subtitle: "Simple but worthy statements beneath the data cleaning"
-author: "Hanna Rudakouskaya"
+author: "Hanna Rudakouskaya, Data Analyst, Teqniksoft"
 date: "June 27, 2017"
 output:
   ioslides_presentation:
@@ -20,9 +20,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Inspiration: garbage in - garbage out: nothing is more true!
 
-<center><img src="images/data-cleaning-inspiration.png" alt="Data - Sorted - Arranged - Presented Visually" style="height: 350px;"/></center>
-
-Picture from Applied Informatics (<http://blog.appliedinformaticsinc.com/data-mining-challenges-in-data-cleaning/>).
+<center><a href="http://blog.appliedinformaticsinc.com/data-mining-challenges-in-data-cleaning/"><img src="images/data-cleaning-inspiration.png" alt="Data - Sorted - Arranged - Presented Visually" style="height: 400px;"/></a></center>
 
 ## "Sponsors" of today's theme
 
@@ -30,10 +28,18 @@ Picture from Applied Informatics (<http://blog.appliedinformaticsinc.com/data-mi
 - my colleagues Anton and two Kates and the tasks we solve daily
 - Kaggle as antipode
 
+<div>
+<center>
+ <img src="images/Cielen-IDS-HI.png" alt="" style="width: 200px;"/> 
+ <img src="images/Teqniksoft.jpg" alt="" style="width: 200px;"/>
+ <img src="images/kaggle-logo-gray-300.png" alt="" style="width: 200px;"/>
+ </center>
+</div>
+
 ## Practice follows: example datasets
 
 ```{r, echo = FALSE}
-test_results_64_process <- read.csv2(file = "data/test_results_set_Feb_to_Apr.csv", stringsAsFactors = FALSE, nrows = 100)
+test_results_64_process <- read.csv2(file = "data/test_results_set_Feb_to_Apr.csv", stringsAsFactors = FALSE)
 
 test_results_64_process$header_col_3 <- as.POSIXct(as.character(test_results_64_process$header_col_3), format = "%Y-%m-%d %H:%M:%S", tz = "")
 ```
@@ -43,8 +49,8 @@ test_results_64_process$header_col_3 <- as.POSIXct(as.character(test_results_64_
 2. Datasets with test times for these test results:
 
 ```{r, echo = FALSE}
-testtime_64_process <- read.csv2(file = "data/test_time_set_Feb_to_Apr_64_process.csv", stringsAsFactors = FALSE, nrows = 100)
-testtime_66_process <- read.csv2(file = "data/test_time_set_Feb_to_Apr_66_process.csv", stringsAsFactors = FALSE, nrows = 100)
+testtime_64_process <- read.csv2(file = "data/test_time_set_Feb_to_Apr_64_process.csv", stringsAsFactors = FALSE)
+testtime_66_process <- read.csv2(file = "data/test_time_set_Feb_to_Apr_66_process.csv", stringsAsFactors = FALSE)
 
 testtime_64_process$header2_col_3 <- as.POSIXct(as.character(testtime_64_process$header2_col_3), format = "%Y-%m-%d %H:%M:%S", tz = "")
 testtime_66_process$header3_col_3 <- as.POSIXct(as.character(testtime_66_process$header3_col_3), format = "%Y-%m-%d %H:%M:%S", tz = "")
@@ -67,11 +73,17 @@ Always check data types before starting anything else. Most common points:
 2. are all the numerical data columns factors?
 3. are all factors just factors or some of them are ranked?
 
+<center><a href="http://www.postgresqltutorial.com/wp-content/uploads/2013/05/PostgreSQL-Data-Types-300x254.png"><img src="images/PostgreSQL-Data-Types-300x254.png" alt="Data Types"/></a></center>
+
+---
+
 > **Unofficial rule**: if unique values are 3% or less of all the data length - that might be a factor
 
-Both Python, R (and Excel <i class="fa fa-frown-o"></i>) are trying to guess the column types - don't forget to cross-check it! Sometimes reading-all-in as characters and transforming onto numeric is better.
+Both Python, R (and Excel :0 ) are trying to guess the column types - don't forget to cross-check it! Sometimes reading-all-in as characters and transforming onto numeric is better.
 
-> **Certain methods "eat" certain types and it's better not to cheat on it!**
+<center><img src="images/eat_the_world_creativemarc_shutterstock.0.png" alt="Certain methods eat certain types" style="width: 550px;"/></center>
+
+> **Certain methods "eat" certain types and you'd better not to cheat on it!**
 
 ## Data types example:
 
@@ -82,18 +94,34 @@ exploratory_info_before$num_of_unique_values <- apply(test_results_64_process, 2
 exploratory_info_before$num_of_unique_values_no_na <- apply(test_results_64_process, 2, function(x){ifelse(sum(is.na(x)) > 0, as.integer(length(unique(x)) -1), length(unique(x)))})
 exploratory_info_before$NAs_percentage <- apply(test_results_64_process, 2, function(x){sum(is.na(x))/length(x)*100})
 
-print.xtable(xtable(table(exploratory_info_before$type)), type = "html", include.rownames = TRUE)
+# print.xtable(xtable(table(exploratory_info_before$type)), type = "html", include.rownames = TRUE)
+options(DT.options = list(pageLength = 4, autoWidth = TRUE, paging = FALSE, searching = FALSE, info = FALSE))
+datatable(as.data.frame(table(exploratory_info_before$type)))
 ```
 
-LIVE DEMO: `header_col_3` (POSIX to integer), `test_result_col_1700` (integer), `test_result_col_282` (integer).
+---
+
+DEMO:
+
+`header_col_3` (POSIX to integer)  | `test_result_col_1700` (factor to integer) | `test_result_col_1282` (double as-is)
+-----------------------------------|----------------------------------|--------------------------------
+Min.: "2017-02-01 20:09:12"        | -35: 3400                        |Min.: 0.0000
+1st Qu.: "2017-02-07 01:35:31"     | -17: 10156                       |1st Qu.: 0.7165
+Median: "2017-02-09 14:31:11"      |                                  |Median: 1.1360
+Mean: "2017-02-13 10:07:59"        |                                  |Mean: 1.2220
+3rd Qu.: "2017-02-13 03:57:39"     |                                  |3rd Qu.: 1.4560
+Max.: "2017-04-13 09:29:43"        |                                  |Max.: 57.2200
+NA's: 0                            |                                  |NA's: 530 
+
 
 ## Data distributions
 
-Second-time view task mostly.
+* features distributions expected to be fixed;
+* check it when you receive new data to apply your pre-built model:
 
 <div>
- <img src="images/distr_mixture1.png" alt=""/> 
- <img src="images/distr_mixture2.png" alt=""/>
+ <img src="images/distr_mixture1.png" alt="" style="height: 257px; width: 360px;"/> 
+ <img src="images/distr_mixture2.png" alt="" style="height: 257px; width: 360px;"/>
 </div>
 
 ## NA values
@@ -102,13 +130,15 @@ Second-time view task mostly.
 
 *see what will happen if we'll omit NAs from our data sets directly*: rows in data with NA omit directly is **`r sum(complete.cases(test_results_64_process))`**!
 
-So we'd better deal with NA more intelligently ;)
+### So we'd better deal with NA more intelligently ;)
 
 *Hint*: if there are lots of NAs in dataset, make a separate variable as NA percentage counter for every row - this may help later.
 
 ```{r, echo=FALSE, eval=FALSE}
-test_results_64_process$na_percentage <- colMeans(is.na(test_results_64_process1))
+test_results_64_process$na_percentage <- rowMeans(is.na(test_results_64_process))
 ```
+
+*Hint 2*: note that header rows rarely have NAs inside them.
 
 ***
 
@@ -141,25 +171,33 @@ test_results_64_process <- filter_na_rows(test_results_64_process, 0.9)
 test_results_64_process <- filter_na_columns(test_results_64_process, 0.75)
 ```
 
-What we have how? **`r sum(complete.cases(test_results_64_process))`** rows that are complete!
+What we have how? **`r sum(complete.cases(test_results_64_process))`** rows that are complete! We can omit non-complete rows now.
+
+```{r omit NA}
+test_results_64_process <- na.omit(test_results_64_process)
+```
+
+**Hint**: block NA test.
 
 ## Multicollinearity
 
 Inspiration: [Mercedes EDA & XGBoost Starter (~0.55) by anokas](https://www.kaggle.com/anokas/mercedes-eda-xgboost-starter-0-55)
 
-1. **Constant features**: "Interestingly, we have ... features which only have a single value in them - these are pretty useless for supervised algorithms, and should probably be dropped (unless you want to use them for anomaly detection in case a different value appears in the test set)" => filtering out factors with 1 level only
+* **Constant features**: "Interestingly, we have ... features which only have a single value in them - these are pretty useless for supervised algorithms, and should probably be dropped (unless you want to use them for anomaly detection in case a different value appears in the test set)" => filtering out factors with 1 level only
 
 ```{r}
 # Now filter out factors with 1 level only
 test_results_64_process <- test_results_64_process[, apply(test_results_64_process, 2, function(x){ifelse(length(unique(x)) > 1, TRUE, FALSE)})]
 ```
 
-2. "Near zero variance": a feature has near zero variance ifit has very few unique values relative to the number of samples and the ratio of the frequency of the most common value to the frequency of the second most common value is large.
+**NOTE:** some of the header rows have been filtered out as well.
 
-```{r}
+* "Near zero variance": a feature has near zero variance ifit has very few unique values relative to the number of samples and the ratio of the frequency of the most common value to the frequency of the second most common value is large.
+
+```{r, warning = FALSE}
 # Filter columns with near zero variance
 exclude_near_zero_variance <- function(data_table_in, freqCut_in = 95/5, uniqueCut_in = 10){
-  require('caret')
+  require('caret', quietly = TRUE, warn.conflicts = FALSE)
   nzvar<-nearZeroVar(data_table_in, freqCut = freqCut_in, uniqueCut = uniqueCut_in, names = TRUE, saveMetrics = FALSE)
   for(cols in nzvar)
     data_table_in[[cols]] <- NULL
@@ -171,26 +209,34 @@ test_results_64_process <- exclude_near_zero_variance(test_results_64_process)
 
 ***
 
-3. **Multicollinearity** by itself
+* **Multicollinearity** by itself
 
-```{r exclude multicollinear}
+```{r exclude multicollinear, eval=FALSE}
 # Exclude completely collinear variables (corr > 0.99 between every two and > 0.96 among others) - dont' forger to save the header for later!
 library(caret)
 
-testtimedata_ready_filtered_for_cor <- select(testtimedata_ready_filtered, - (1:11), - CMDEXECUTIONTIMEINMIN)
-correlationMatrix <- cor(testtimedata_ready_filtered_for_cor)
-highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.99, names = TRUE)
+test_results_64_process_for_cor <- select(test_results_64_process, - matches("header"))
+correlationMatrix <- cor(test_results_64_process_for_cor)
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.99, names = TRUE, exact = TRUE)
 
-testtimedata_ready_filtered <- testtimedata_ready_filtered[, !(names(testtimedata_ready_filtered) %in% highlyCorrelated), with = FALSE]
+test_results_64_process <- test_results_64_process[, !(names(test_results_64_process) %in% highlyCorrelated)]
 
-rm(testtimedata_ready_filtered_for_cor, correlationMatrix, highlyCorrelated)
+# rm(test_results_64_process_for_cor, correlationMatrix, highlyCorrelated)
 ```
 
 **NOTE**: when removing one of the collinear variables one should always remember that 99% becomes 96% when going through the columns etc.
 
+* **Non-multicollinearity** at first sight: correlation is 0.6
+
+<center><img src="images/Nocorr example.png" alt="No correaltion, but cross-connection" style="width: 700px;"/></center>
+
 ## Outliers
 
-TBD
+Example rules:
+
+* **mean $\pm$ 3 sigma** --- 99.7% of the population is contained within 3 standard deviations from the mean (in case of normal distribution);
+* **1Q - 1.5 IQR to 3Q + 1.5 IQR** --- [Motivation to use this criterion by Rob J. Hyndman](https://stats.stackexchange.com/a/1153/74599);
+* **0.01 quantile - 1.5 IQR to 0.99 quantile + 1.5 IQR** --- In case we want to remove completely outstanding observations.
 
 ## Other ideas for preliminary check
 
@@ -199,77 +245,123 @@ TBD
 * whitespace and tab problem;
 * lowercase / uppercase.
 
+**RegExp**s are the Dirty Data's worst enemies and Tidy Data's best friends!
+
+<center><img src="images/princess.gif" alt="Dirty? Tidy!" style="width: 465px;"/></center>
+
 # Tidying data
 
 ## Tidy data definition for today
 
+As you probably've heard, according to [Hadley Wickham's article "Tidy Data"](http://vita.had.co.nz/papers/tidy-data.html),
 
+"In tidy data:
+
+1. Each variable forms a column.
+2. Each observation forms a row.
+3. Each type of observational unit forms a table."
+
+In practice, I'd recommend you to use header analysis beforehand.
 
 ## Headers and their analysis
 
+First of all, get "table" of header rows meanings:
 
-взять table - для определения а) частот значений б) непересекающегося подмножества значений
+```{r, results='asis'}
+test_results_64_process_header <- select(test_results_64_process, matches("header"))
+
+header_info <- data.frame(colname = names(test_results_64_process_header))
+header_info$type <- sapply(test_results_64_process_header, typeof)
+header_info$num_of_unique_values <- apply(test_results_64_process_header, 2, function(x){length(unique(x))})
+
+# print.xtable(xtable(header_info), type = "html", include.rownames = TRUE)
+options(DT.options = list(pageLength = 5, autoWidth = TRUE, paging = FALSE, searching = FALSE, info = FALSE))
+datatable(header_info)
+```
+
+---
+
+Some of the header rows are likely to be factors, look at them carefully (`header_col_7` vs. `header_col_10`):
+
+```{r, results='asis'}
+options(DT.options = list(pageLength = 10, autoWidth = TRUE, paging = FALSE, searching = FALSE, info = FALSE))
+datatable(as.data.frame.matrix(table(test_results_64_process_header$header_col_7, test_results_64_process_header$header_col_10)))
+```
+
+Evident grouping!
 
 ## Data groups
 
-- нужно ли делать данные на группы?
-- если да, то по какой причине?
-- в чем заключается различие между группами с точки зрения результатов именно этой задачи?- тесты на различие групповых средних и групповых дисперсий - лучший пример
+As we've seen, data header contains several groups. We have 2 options:
+
+* add these groups as factors, or
+* separate the whole data set into groups and perform separate analysis for every group.
+
+Which option to choose?
+
+1. If you plan to perform classification -- option 1;
+2. If you plan to perform regression -- option 2.
+
+---
+
+Do I have to have groups at all?
+
+Check:
+
+1. F Test to Compare Variances between groups;
+2. Student's t-Test to check significant difference in mean values between the groups.
+
+<center><img src="images/means.png" alt="T-test" style="width: 400px;"/></center>
 
 ## Data joining
 
-Потом- - объединение данных друг с другом для решения конкретной задачи
+Double-**triple**-**QUADRUPLE** check what you're doing here!!!
 
-## Insight first - analysis later
+<center><a href="http://bailiwick.io/content/images/2015/07/SQL_Join_Types-1.png"><img src="images/SQL_Join_Types-1.png" alt="Types of Joins" style="width: 600px;"/></a></center>
 
-- если есть проблема - дожен быть пример проблемы с ожидаемым решением
-- если нет примера - руки развязаны применять любые методы и получать любые результаты
+## Code book and column specifications
+
+Big Data is usually that big you'll not be ablt to have any code book -- just relax and enjoy your non-acquaintance ;)
+
+But! If you're lucky enough to get it - don't waste it!
+
+<center><a href="https://static.probusiness.by/n/02/5/stopka_dokumentov.png"><img src="images/stopka_dokumentov.png" alt="Code Book" style="width: 600px;"/></a></center>
 
 ## "Dealing with data" pipeline
 
-Выстроить пайплайн, согласно которому всегда можно провести процесс получения данных еще раз. Использовать его для обновления датасета, и только его. Способ получения данных должен быть фиксированным
+Second most important thing in data cleaning.
 
-## Data book and column specifications
+Don't get lazy - build it!
 
-- не знаем спецификации колонок
+Solved inside pipeline:
 
+1. Data obtaining (+ updating if necessary);
+2. All the data cleaning steps;
+3. All the post-cleaning checks (distributions, means, variances etc.).
 
-Databook или описание данных или data dictionary - было бы классно, но встречается действительно редко
+Pipeline must be fixed!
 
-## Importance of Regular Expressions
+## Insight first - analysis later
 
-Важность RegExp
+**THE MOST** important thing.
 
-# Task-dependant | funny stuff obtained for particular practice cases
+* if there's a problem statement - ask for an example;
+* if there's no example -- feel free to choose any method and play with data in your favourite way! Yummy!
+* one dataset may suite one goal and not suite another at all. The goal of analysis must be specific enough so that you can detect this in case.
 
-## Time series quick classification
+## Enjoy your data!
 
-- проверка эмпирических распределений (чтобы они не менялись во времени)
+<center><img src="images/cycloid-1.png" alt="" style="width: 400px;"/></center>
 
-# Moving on to practice
+<center>Hanna Rudakouskaya</center>
+<center>Data Analyst, Teqniksoft</center>
+<center>http://hannarud.github.io/</center>
 
-## Some exploratory info printout
+## Links - FYU
 
-```{r, echo = FALSE}
-exploratory_info_after <- data.frame(colname = names(test_results_64_process))
-exploratory_info_after$type <- sapply(test_results_64_process, typeof)
-exploratory_info_after$num_of_unique_values <- apply(test_results_64_process, 2, function(x){length(unique(x))})
-exploratory_info_after$num_of_unique_values_no_na <- apply(test_results_64_process, 2, function(x){ifelse(sum(is.na(x)) > 0, as.integer(length(unique(x)) -1), length(unique(x)))})
-exploratory_info_after$NAs_percentage <- apply(test_results_64_process, 2, function(x){sum(is.na(x))/length(x)*100})
-```
-
-```{r exploratory info printout, results='asis', echo=FALSE, message=FALSE, warning=FALSE}
-options(DT.options = list(pageLength = 8, autoWidth = TRUE, scrollX = TRUE))
-datatable(exploratory_info_after)
-```
-
-
-
-- в задаче про test time цели могут ставить по-разному, от этого зависит и целевая переменнная. Если цель - 
-
-
-
-
-
-
-
+* [Davy Cielen, Arno D.B. Meysman, Mohamed Ali "Introducing Data Science: Big Data, Machine Learning, and more using Python tools"](https://www.manning.com/books/introducing-data-science);
+* [Teqniksoft Homepage](https://teqniksoft.com/);
+* [Kaggle: Your Home for Data Science](https://www.kaggle.com/);
+* [Mercedes EDA & XGBoost Starter (~0.55) by anokas](https://www.kaggle.com/anokas/mercedes-eda-xgboost-starter-0-55);
+* [Simple algorithm for online outlier detection of a generic time series](https://stats.stackexchange.com/questions/1142/simple-algorithm-for-online-outlier-detection-of-a-generic-time-series);
+* ["Tidy Data" by Hadley Wickham](http://vita.had.co.nz/papers/tidy-data.html).

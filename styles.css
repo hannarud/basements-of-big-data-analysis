@@ -1,3 +1,6 @@
+* {
+  color: #000;
+}
 
 table, th, td {
     border: 2px solid #DDDDDD;
@@ -22,4 +25,13 @@ div:after {
     content: '';
     display: inline-block;
     width: 100%;
+}
+
+.rmdtable table, th, td {
+    border: 2px solid #DDDDDD;
+    border-collapse: collapse;
+}
+
+.rmdtable th, td {
+    padding: 5px;
 }
